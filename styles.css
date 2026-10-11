@@ -12,3 +12,5 @@
 @media(max-width:420px){.topbar{height:auto;min-height:68px;flex-wrap:wrap;padding:12px 0;gap:10px}.right-header{margin-left:auto}.room-banner{flex-wrap:wrap}.room-code{max-width:100%}.hero h1{font-size:clamp(32px,10vw,40px)}}
 
 @media(max-width:420px){.players{grid-template-columns:1fr}}
+
+.confirm-dialog{width:min(460px,calc(100vw - 32px));max-height:calc(100dvh - 48px);overflow:auto;border:1px solid var(--line);border-radius:20px;padding:24px;color:var(--ink);box-shadow:var(--shadow)}.confirm-dialog::backdrop{background:#151c3680}.confirm-dialog h2{margin:0 0 14px;font-size:22px}.confirm-dialog p{line-height:1.8;overflow-wrap:anywhere}.confirm-dialog form{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap;margin-top:24px}

@@ -1,5 +1,5 @@
 import { INITIAL_RULES, RULE_NAMES, calculateGame, leaderboard, nextGame, availableNumbers, safeSubmission, normalizeRules, validRules, n } from './engine.js';
-import { createStore } from './store.js?v=20261011-live2';
+import { createStore } from './store.js?v=20261011-live3';
 
 const app = document.querySelector('#app');
 const toastEl = document.querySelector('#toast');
@@ -7,6 +7,16 @@ const state = {route:'home', code:'', room:null, loading:false, error:'', fullsc
 const ui = {choice:null, prediction:'', doubleMultiplier:1, gameKey:'', draftRules:{...INITIAL_RULES}};
 let store, unsubscribe = () => {}, toastTimer;
 const esc = value => String(value ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+function confirmAction(message){
+ return new Promise(resolve=>{
+  const dialog=document.createElement('dialog');
+  dialog.className='confirm-dialog';
+  dialog.setAttribute('aria-labelledby','confirm-title');
+  dialog.innerHTML=`<h2 id="confirm-title">操作の確認</h2><p>${esc(message)}</p><form method="dialog"><button class="btn secondary" value="cancel" autofocus>キャンセル</button><button class="btn" value="confirm">実行する</button></form>`;
+  dialog.addEventListener('close',()=>{const accepted=dialog.returnValue==='confirm';dialog.remove();resolve(accepted);},{once:true});
+  document.body.append(dialog);dialog.showModal();
+ });
+}
 const sign = value => value > 0 ? `+${value}` : String(value);
 const statusText = status => ({safe:'SAFE!',under:'LOW! / 下限未満',over:'OUT! / 上限超過'})[status] || '';
 const playersArr = room => Object.entries(room?.players || {}).sort((a,b) => (a[1].joinedAt||0)-(b[1].joinedAt||0)||a[0].localeCompare(b[0]));
@@ -166,7 +176,7 @@ async function beginGame(){
  const rules=normalizeRules(source);
  const count=playersArr(state.room).length;
  if(count===0)throw new Error('先に生徒の参加を待ってください。');
- if(count<4&&!confirm('参加者が4人未満ですが、テストとして開始しますか？'))return;
+ if(count<4&&!await confirmAction('参加者が4人未満ですが、開始しますか？'))return;
  await store.mutate(state.code,room=>{
   if(!['lobby','result'].includes(room.stage))return;
   const next=room.current?nextGame(room.current):{round:1,gameInRound:1,totalGame:1,newRound:false};
@@ -183,7 +193,7 @@ const shuffle=list=>{
 };
 async function closeSubmissions(){
  const members=playersArr(state.room);const submitted=members.filter(([id])=>state.room.submissions?.[id]).length;
- if(submitted<members.length && !confirm(`未提出者が${members.length-submitted}人います。0点（棄権）として締め切りますか？`))return;
+ if(submitted<members.length && !await confirmAction(`未提出者が${members.length-submitted}人います。0点（棄権）として締め切りますか？`))return;
  const locked={};
  for(const [id,p] of members)locked[id]=safeSubmission(state.room.submissions?.[id],state.room.current.rules,p);
  state.room._secretLocked=locked;
@@ -240,11 +250,11 @@ async function joinPlayer(nickname){
 }
 async function removePlayer(uid){
  const p=state.room?.players?.[uid];if(!p)return;
- if(!confirm(`「${p.nickname}」をルームから削除しますか？`))return;
+ if(!await confirmAction(`「${p.nickname}」をルームから削除しますか？`))return;
  await store.mutate(state.code,room=>{if(room.stage!=='lobby')return;delete room.players[uid];room.playerCount=Object.keys(room.players).length;return room;});
 }
 async function endTournament(){
- if(!confirm('大会を終了して優勝者を発表しますか？終了後は再開できません。'))return;
+ if(!await confirmAction('大会を終了して優勝者を発表しますか？終了後は再開できません。'))return;
  await store.mutate(state.code,room=>{if(room.stage!=='result')return;room.stage='finished';return room;});
 }
 function exportCSV(){
