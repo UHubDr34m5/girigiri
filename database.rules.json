@@ -1,0 +1,46 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "rooms": {
+      "$room": {
+        ".read": "auth !== null",
+        ".write": "auth !== null && ((!data.exists() && newData.child('teacherUid').val() === auth.uid && newData.child('stage').val() === 'lobby') || (data.exists() && data.child('teacherUid').val() === auth.uid && newData.child('teacherUid').val() === auth.uid))",
+        "players": {
+          "$uid": {
+            ".write": "auth !== null && auth.uid === $uid && !data.exists() && newData.exists() && root.child('rooms').child($room).child('stage').val() === 'lobby' && root.child('rooms').child($room).child('players').numChildren() < 16",
+            ".validate": "(auth !== null && newData.parent().parent().child('teacherUid').val() === auth.uid) || (newData.child('nickname').isString() && newData.child('nickname').val().length > 0 && newData.child('nickname').val().length <= 16 && newData.child('score').val() === 0 && newData.child('usedDouble').val() === false && newData.child('joinedAt').isNumber())"
+          }
+        }
+      }
+    },
+    "privateSubmissions": {
+      "$room": {
+        ".read": "auth !== null && root.child('rooms').child($room).child('teacherUid').val() === auth.uid",
+        "$uid": {
+          ".read": "auth !== null && auth.uid === $uid",
+          ".write": "auth !== null && auth.uid === $uid && newData.exists() && root.child('rooms').child($room).child('stage').val() === 'collecting' && root.child('rooms').child($room).child('players').child($uid).exists()",
+          ".validate": "newData.hasChildren(['number','prediction','doubleMultiplier']) && newData.child('number').isNumber() && newData.child('number').val() >= 0 && newData.child('number').val() <= 10 && newData.child('number').val() % 1 === 0 && (newData.child('number').val() !== 0 || root.child('rooms').child($room).child('current').child('rules').child('defense').val() === true) && (newData.child('number').val() === 0 || !root.child('rooms').child($room).child('players').child($uid).child('usedNumbers').child('n' + newData.child('number').val()).exists()) && ((root.child('rooms').child($room).child('current').child('rules').child('prediction').val() === true && (newData.child('prediction').val() === 'safe' || newData.child('prediction').val() === 'out')) || (root.child('rooms').child($room).child('current').child('rules').child('prediction').val() !== true && newData.child('prediction').val() === '')) && (newData.child('doubleMultiplier').val() === 1 || (root.child('rooms').child($room).child('current').child('rules').child('doubleUp').val() === true && root.child('rooms').child($room).child('players').child($uid).child('usedDouble').val() !== true && (newData.child('doubleMultiplier').val() === 2 || newData.child('doubleMultiplier').val() === 3 || newData.child('doubleMultiplier').val() === 4 || newData.child('doubleMultiplier').val() === 5)))",
+          "number": {
+            ".validate": true
+          },
+          "prediction": {
+            ".validate": true
+          },
+          "doubleMultiplier": {
+            ".validate": true
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+    "privateLocked": {
+      "$room": {
+        ".read": "auth !== null && root.child('rooms').child($room).child('teacherUid').val() === auth.uid",
+        ".write": "auth !== null && root.child('rooms').child($room).child('teacherUid').val() === auth.uid"
+      }
+    }
+  }
+}
