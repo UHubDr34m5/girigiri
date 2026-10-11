@@ -1,5 +1,5 @@
 import { INITIAL_RULES, RULE_NAMES, calculateGame, leaderboard, nextGame, availableNumbers, safeSubmission, normalizeRules, validRules, n } from './engine.js';
-import { createStore } from './store.js?v=20261011-live1';
+import { createStore } from './store.js?v=20261011-live2';
 
 const app = document.querySelector('#app');
 const toastEl = document.querySelector('#toast');

@@ -10,3 +10,5 @@
 @media(max-width:760px){.brand{white-space:nowrap;font-size:15px;flex-shrink:0}.right-header{gap:6px}.right-header .ghost{font-size:12px;padding:8px 9px}.mode-pill{font-size:10px;padding:6px 8px}}
 
 @media(max-width:420px){.topbar{height:auto;min-height:68px;flex-wrap:wrap;padding:12px 0;gap:10px}.right-header{margin-left:auto}.room-banner{flex-wrap:wrap}.room-code{max-width:100%}.hero h1{font-size:clamp(32px,10vw,40px)}}
+
+@media(max-width:420px){.players{grid-template-columns:1fr}}

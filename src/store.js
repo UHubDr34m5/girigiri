@@ -1,5 +1,6 @@
 // 教員・生徒の公開状態と、発表前の非公開回答を分離します。
 import { currentSubmissions } from './submissions.js?v=20261011-live1';
+import { restoreOrSignIn } from './auth.js?v=20261011-live2';
 const SDK = '11.10.0';
 export const isConfigured = () => {
   const c=window.GIRIGIRI_FIREBASE_CONFIG||{};
@@ -12,8 +13,7 @@ export async function createStore(){
  const dbSDK=await import(`https://www.gstatic.com/firebasejs/${SDK}/firebase-database.js`);
  const app=appSDK.initializeApp(window.GIRIGIRI_FIREBASE_CONFIG);
  const auth=authSDK.getAuth(app),database=dbSDK.getDatabase(app);
- await auth.authStateReady();
- const user=auth.currentUser||(await authSDK.signInAnonymously(auth)).user;
+ const user=await restoreOrSignIn(auth,authSDK.signInAnonymously);
  const path=(branch,code,id='')=>dbSDK.ref(database,`${branch}/${code}${id?'/'+id:''}`);
  return {
   uid:user.uid,
