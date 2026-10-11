@@ -1,5 +1,5 @@
 import { INITIAL_RULES, RULE_NAMES, calculateGame, leaderboard, nextGame, availableNumbers, safeSubmission, normalizeRules, validRules, n } from './engine.js';
-import { createStore } from './store.js';
+import { createStore } from './store.js?v=20261011-live1';
 
 const app = document.querySelector('#app');
 const toastEl = document.querySelector('#toast');
@@ -14,7 +14,7 @@ function tell(message){clearTimeout(toastTimer);toastEl.textContent=message;toas
 const copyText = async val => { try {await navigator.clipboard.writeText(val);tell('コピーしました');} catch {prompt('コピーしてください',val);} };
 function toHome(){unsubscribe();unsubscribe=()=>{};state.route='home';state.code='';state.room=null;state.fullscreen=false;history.replaceState(null,'',location.pathname);render();}
 function shell(content){
-  return `<div class="shell"><header class="topbar"><a href="#" class="brand" data-action="home"><span class="brand-logo">9</span><span>ギリギリ・ナンバー</span></a><div class="right-header">${store?.demo?'<span class="mode-pill">DEMO</span>':'<span class="mode-pill">LIVE</span>'}${state.route!=='home'?'<button class="ghost" data-action="home">ホームへ</button>':''}</div></header>${content}<footer class="footer">GIRIGIRI NUMBER © 2026 ・ 教室から生まれる数字の心理戦</footer></div>`;
+  return `<div class="shell"><header class="topbar"><a href="#" class="brand" data-action="home"><span class="brand-logo">9</span><span>ギリギリ・ナンバー</span></a><div class="right-header"><span class="mode-pill">LIVE</span>${state.route!=='home'?'<button class="ghost" data-action="home">ホームへ</button>':''}</div></header>${content}<footer class="footer">GIRIGIRI NUMBER © 2026 ・ 教室から生まれる数字の心理戦</footer></div>`;
 }
 function render(){
  if(!store)return;
@@ -35,7 +35,7 @@ function homeHTML(){
  return `<section class="hero"><div><span class="eyebrow">4〜16人で遊べる数字の心理戦</span><h1>攻めるか、守るか。<br><strong>ギリギリ</strong>を狙え。</h1><p class="lead">全員が1〜10の数字を同時に選択。<br>合計が上限以内ならプラス、超えたらマイナス。<br>読み合いと逆転が止まらない、クラス対戦ゲーム。</p><div class="mini-guide"><span class="guide-tag">数字カード不要</span><span class="guide-tag">先生が進行</span><span class="guide-tag">スマホで参加</span></div></div><div class="hero-visual"><div class="float-card one">3</div><div class="hero-number">9</div><div class="float-card two">7</div><div class="visual-label">HIGH RISK. HIGH REWARD.</div></div></section>
  <div class="home-actions"><section class="home-box"><div class="icon-tile">♛</div><h2>教員として開催</h2><p>ルームを作成し、ルール・上限・発表演出を管理します。</p><button data-action="create-room" class="btn wide">＋ 新しいルームを作る</button>${last?`<button data-action="restore-teacher" class="btn secondary wide" style="margin-top:9px">前回の教員ルームに戻る</button>`:''}</section>
  <section class="home-box"><div class="icon-tile mint">#</div><h2>生徒として参加</h2><p>先生から伝えられたルームコードとニックネームを入力。</p><form id="join-code-form"><label class="field"><span class="label">ルームコード</span><input name="code" class="input" maxlength="8" placeholder="例：AB7K2M9Q" required autocomplete="off" style="text-transform:uppercase"></label><button class="btn mint wide" type="submit">ルームに参加する →</button></form></section></div>
- ${store.demo?`<div class="notice">現在はローカルデモです。先生の画面と架空の生徒6人で動作確認できます。<strong>別端末との同期にはREADMEのFirebase初期設定が必要</strong>です。</div>`:`<div class="notice ok">オンラインモードで接続しています。ルームコードを共有すると、生徒が各端末から参加できます。</div>`}`;
+ <div class="notice ok">オンラインモードで接続しています。ルームコードを共有すると、生徒が各端末から参加できます。</div>`;
 }
 function joinHTML(){
  return `<section style="max-width:500px;margin:60px auto"><div class="panel"><div class="panel-heading"><h2>生徒として参加</h2><span class="mode-pill">${esc(state.code||'JOIN')}</span></div>${state.error?`<div class="notice error">${esc(state.error)}</div>`:''}<p class="muted">ニックネームを入力して、ゲームに参加しましょう。</p><form id="join-player-form"><label class="field"><span class="label">ニックネーム（1〜16文字）</span><input class="input" name="nickname" maxlength="16" required placeholder="例：数学マスター" autocomplete="nickname"></label><button class="btn wide" type="submit">参加する！</button></form><p class="tip">本名ではなくニックネームを使ってください。</p></div></section>`;
@@ -69,7 +69,7 @@ function playerList(room, phase){return playersArr(room).map(([id,p],i)=>{
  }).join('')||'<p class="tiny-note">参加者を待っています…</p>';}
 function collectionHTML(room){
  const members=playersArr(room);const done=members.filter(([id])=>room.submissions?.[id]).length;const p=Math.round(100*done/Math.max(1,members.length));const r=room.current.rules;
- return `<section class="panel"><div class="panel-heading"><h2>数字を受付中</h2><span class="mode-pill">COLLECTING</span></div><div class="stats"><div class="stat"><label>第${room.current.round}ラウンド</label><strong>${room.current.gameInRound}<span class="unit"> / 5</span></strong></div><div class="stat"><label>上限</label><strong>${r.limit}</strong></div><div class="stat"><label>提出済み</label><strong>${done}<span class="unit"> / ${members.length}</span></strong></div></div>${currentRulePills(r)}<div class="progress-row" style="margin-top:21px"><span>提出状況</span><div class="progressbar"><span style="width:${p}%"></span></div><strong>${p}%</strong></div><div class="players" style="margin-top:18px">${playerList(room,'collecting')}</div>${store.demo?`<button data-action="demo-fill" class="btn secondary wide" style="margin-top:18px">⚡ デモ生徒の数字を自動提出</button>`:''}<button data-action="close-submissions" class="btn wide" style="margin-top:12px">🔒 締め切って発表へ</button><p class="tiny-note">未提出者がいても締め切れます（そのゲームは棄権・0点）。</p></section>`;
+ return `<section class="panel"><div class="panel-heading"><h2>数字を受付中</h2><span class="mode-pill">COLLECTING</span></div><div class="stats"><div class="stat"><label>第${room.current.round}ラウンド</label><strong>${room.current.gameInRound}<span class="unit"> / 5</span></strong></div><div class="stat"><label>上限</label><strong>${r.limit}</strong></div><div class="stat"><label>提出済み</label><strong>${done}<span class="unit"> / ${members.length}</span></strong></div></div>${currentRulePills(r)}<div class="progress-row" style="margin-top:21px"><span>提出状況</span><div class="progressbar"><span style="width:${p}%"></span></div><strong>${p}%</strong></div><div class="players" style="margin-top:18px">${playerList(room,'collecting')}</div><button data-action="close-submissions" class="btn wide" style="margin-top:12px">🔒 締め切って発表へ</button><p class="tiny-note">未提出者がいても締め切れます（そのゲームは棄権・0点）。</p></section>`;
 }
 function revealInfo(room){
  const c=room.current;const order=c.revealOrder||[];const id=order[c.revealIndex];const p=room.players[id];const sub=room._secretLocked?.[id]||c.revealedNumbers?.[id];const isReady=c.revealIndex<0;const namePhase=c.revealPhase==='name';const numberPhase=c.revealPhase==='number';
@@ -99,7 +99,7 @@ function teacherHTML(){const r=state.room;const canSetup=['lobby','result'].incl
 function waitingHTML(room){return `<div class="panel waiting"><div class="waiting-icon">⌛</div><h2>ゲーム開始を待っています</h2><p>先生が全員の参加を確認すると、数字を選べるようになります。</p><div class="notice ok">ルームに参加できています！参加者 ${playersArr(room).length}人</div></div>`;}
 function numberSelectHTML(room){
  const p=room.players[store.uid];const rules=room.current.rules;const existing=room.submissions?.[store.uid];const gameKey=String(room.current.totalGame);
- if(ui.gameKey!==gameKey){ui.gameKey=gameKey;ui.choice=existing?.number??null;ui.prediction=existing?.prediction||'';ui.doubleMultiplier=existing?.doubleMultiplier||1;}
+ if(ui.gameKey!==gameKey||(ui.choice===null&&existing)){ui.gameKey=gameKey;ui.choice=existing?.number??null;ui.prediction=existing?.prediction||'';ui.doubleMultiplier=existing?.doubleMultiplier||1;}
  const used=new Set(Object.keys(p.usedNumbers||{}).map(k=>Number(k.slice(1))));
  return `<div class="panel"><div class="panel-heading"><h2>数字を選ぼう</h2><span class="mode-pill">GAME ${room.current.gameInRound}/5</span></div><div class="stats"><div class="stat"><label>今回の上限</label><strong>${rules.limit}</strong></div><div class="stat"><label>現在の得点</label><strong>${sign(p.score||0)}</strong></div><div class="stat"><label>使用済み</label><strong>${used.size}<span class="unit"> / 10</span></strong></div></div>${currentRulePills(rules)}<p class="subheading" style="margin-top:21px">YOUR NUMBER / 1〜10</p><div class="number-grid">${Array.from({length:10},(_,i)=>i+1).map(num=>`<button data-action="choose-number" data-value="${num}" class="number-choice ${used.has(num)?'used':''} ${ui.choice===num?'selected':''}" ${used.has(num)?'disabled':''}>${num}</button>`).join('')}</div>${rules.defense?`<button data-action="choose-number" data-value="0" class="choice-button ${ui.choice===0?'active':''}" style="width:100%;margin-bottom:13px">🛡 ディフェンスする（0点・カード消費なし）</button>`:''}
  ${rules.prediction?`<div class="rule-box"><h3>🔮 セーフ・アウト予想 <span class="tiny-note">必須</span></h3><div class="prediction-row"><button class="choice-button ${ui.prediction==='safe'?'active':''}" data-action="choose-prediction" data-value="safe">✅ セーフを予想</button><button class="choice-button ${ui.prediction==='out'?'active':''}" data-action="choose-prediction" data-value="out">❌ アウトを予想</button></div><p class="tip">下限未満もアウトです。ディフェンス中は予想による得失点なし。</p></div>`:''}
@@ -112,8 +112,7 @@ function studentHTML(){const room=state.room,p=room.players[store.uid];const don
  ${room.stage==='lobby'?waitingHTML(room):room.stage==='collecting'?numberSelectHTML(room):room.stage==='revealing'?revealingHTML(room,true):room.stage==='result'?resultHTML(room):finishedHTML(room)}${scoreboard(room)}${done?'<p class="tip">大会お疲れさまでした！</p>':''}</div>`;
 }
 function makeRoom(){
- const room={ teacherUid: store.uid,createdAt:Date.now(),stage:'lobby',settings:{...INITIAL_RULES},players:{},submissions:{},history:{}};
- if(store.demo){const names=['アオイ','ハル','ナツ','ユウ','ソラ','ミオ'];names.forEach((nickname,i)=>{room.players[`fake-${i}`]={nickname,score:0,joinedAt:Date.now()+i,usedDouble:false,usedNumbers:{}};});}
+ const room={ teacherUid: store.uid,createdAt:Date.now(),stage:'lobby',playerCount:0,settings:{...INITIAL_RULES},players:{},submissions:{},history:{}};
  return room;
 }
 const randomRoomCode=()=>{
@@ -173,7 +172,7 @@ async function beginGame(){
   const next=room.current?nextGame(room.current):{round:1,gameInRound:1,totalGame:1,newRound:false};
   if(next.newRound)Object.values(room.players||{}).forEach(p=>{p.usedNumbers={};});
   room.current={round:next.round,gameInRound:next.gameInRound,totalGame:next.totalGame,rules,revealOrder:[],revealIndex:-1,revealPhase:'ready'};
-  room.settings=rules;if(store.demo)room.submissions={};room.stage='collecting';return room;
+  room.settings=rules;room.stage='collecting';return room;
  });
  tell('数字の受付を開始しました');
 }
@@ -191,7 +190,6 @@ async function closeSubmissions(){
  await store.lock(state.code,locked);
  await store.mutate(state.code,room=>{
   if(room.stage!=='collecting')return;
-  if(store.demo)room._secretLocked=locked;
   room.current.revealOrder=shuffle(playersArr(room).map(([id])=>id));
   room.current.revealIndex=-1;room.current.revealPhase='ready';room.current.revealedNumbers={};room.stage='revealing';return room;
  });
@@ -219,22 +217,6 @@ async function revealAdvance(){
   return room;
  });
 }
-async function fakeFill(){if(!store.demo) return;
- await store.mutate(state.code,room=>{
-  if(room.stage!=='collecting')return;
-  room.submissions ||= {};
-  const rules=room.current.rules;
-  for(const [id,p] of playersArr(room)){
-   if(room.submissions[id])continue;
-   const available=availableNumbers(p);
-   const num=available[Math.floor(Math.random()*available.length)]||0;
-   const prediction=rules.prediction?(Math.random()<.5?'safe':'out'):'';
-   const doubleMultiplier=rules.doubleUp&&!p.usedDouble&&Math.random()<.15?2+Math.floor(Math.random()*4):1;
-   room.submissions[id]={number:num,prediction,doubleMultiplier};
-  }
-  return room;
- });tell('デモの回答を入力しました');
-}
 async function submitChoice(){
  const p=state.room.players?.[store.uid],r=state.room.current?.rules;
  if(!p||!r||state.room.stage!=='collecting')return;
@@ -243,7 +225,7 @@ async function submitChoice(){
  if(r.prediction&&!['safe','out'].includes(ui.prediction))throw new Error('セーフかアウトを予想してください。');
  const multiplier=r.doubleUp&&!p.usedDouble?Number(ui.doubleMultiplier):1;
  if(![1,2,3,4,5].includes(multiplier))throw new Error('倍率を選び直してください。');
- await store.submit(state.code,{number:num,prediction:r.prediction?ui.prediction:'',doubleMultiplier:multiplier});
+ await store.submit(state.code,{game:state.room.current.totalGame,number:num,prediction:r.prediction?ui.prediction:'',doubleMultiplier:multiplier});
  tell('提出しました！締め切りまで変更できます。');
 }
 async function joinPlayer(nickname){
@@ -259,7 +241,7 @@ async function joinPlayer(nickname){
 async function removePlayer(uid){
  const p=state.room?.players?.[uid];if(!p)return;
  if(!confirm(`「${p.nickname}」をルームから削除しますか？`))return;
- await store.mutate(state.code,room=>{if(room.stage!=='lobby')return;delete room.players[uid];return room;});
+ await store.mutate(state.code,room=>{if(room.stage!=='lobby')return;delete room.players[uid];room.playerCount=Object.keys(room.players).length;return room;});
 }
 async function endTournament(){
  if(!confirm('大会を終了して優勝者を発表しますか？終了後は再開できません。'))return;
@@ -282,7 +264,6 @@ async function onAction(action, node){
   case 'start-game':await beginGame();break;
   case 'close-submissions':await closeSubmissions();break;
   case 'advance-reveal':await revealAdvance();break;
-  case 'demo-fill':await fakeFill();break;
   case 'remove-player':await removePlayer(node.dataset.uid);break;
   case 'end-tournament':await endTournament();break;
   case 'export-csv':exportCSV();break;
@@ -306,6 +287,9 @@ app.addEventListener('submit',async e=>{
   if(form.id==='join-player-form'){await joinPlayer(String(new FormData(form).get('nickname')||''));return;}
  }catch(err){console.error(err);tell(`エラー：${err.message||err}`);}
 });
+app.addEventListener('input', e=>{
+ if(e.target.closest('#rules-form'))parseRules();
+});
 app.addEventListener('change', e=>{
  if(e.target.closest('#rules-form')){
   parseRules();
@@ -321,6 +305,6 @@ app.addEventListener('change', e=>{
   else render();
  }catch(error){
   console.error(error);
-  app.innerHTML=`<div class="shell"><div class="panel" style="margin:10vh auto;max-width:620px"><h2>Firebaseへの接続に失敗しました</h2><p>${esc(error.message)}</p><p class="tip">設定・Anonymous Authentication・Realtime Database の URL とルールをご確認ください。設定前にお試しするには firebase-config.js の内容を空欄に戻してください。</p><button class="btn" onclick="location.reload()">再読み込み</button></div></div>`;
+  app.innerHTML=`<div class="shell"><div class="panel" style="margin:10vh auto;max-width:620px"><h2>Firebaseへの接続に失敗しました</h2><p>${esc(error.message)}</p><p class="tip">設定・Anonymous Authentication・Realtime Database の URL とルールをご確認ください。接続が復旧してから再読み込みしてください。</p><button class="btn" onclick="location.reload()">再読み込み</button></div></div>`;
  }
 })();
